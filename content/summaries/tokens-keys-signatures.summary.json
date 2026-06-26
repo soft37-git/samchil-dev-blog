@@ -1,0 +1,44 @@
+{
+  "_doc": "외부 재게재 요약 초안(자동 생성). 플랫폼별 톤·형식 상이. status:draft → 사람 검수 후 게시. 게시 산출물은 make-export. canonical=자기 언어 원본.",
+  "slug": "tokens-keys-signatures",
+  "generated": "2026-06-27",
+  "status": "draft",
+  "platforms": {
+    "medium": {
+      "lang": "en",
+      "canonical": "https://samchil.dev/blog/tokens-keys-signatures",
+      "title": "What Tokens, Keys, and Signatures Actually Are",
+      "body": "> An API that only checks a token knows \"someone holding the key sent this\" — but not whether the request body was changed in transit. An attacker who picks up the token, or rewrites the body of an otherwise-valid request, sails through.\n\nThree tools, three different jobs:\n- Token = a bearer credential.\n- Key = the secret itself.\n- Signature = a seal stamped over the request contents with a key.\n\nThe full post walks through vulnerable code, how the attack works, the fix — with working code.\n\n👉 Read the full breakdown: https://samchil.dev/blog/tokens-keys-signatures?utm_source=medium&utm_medium=referral&utm_campaign=tokens-keys-signatures",
+      "tags": [
+        "security",
+        "L1",
+        "ladder",
+        "access"
+      ]
+    },
+    "velog": {
+      "lang": "ko",
+      "canonical": "https://samchil.dev/blog/ko/tokens-keys-signatures",
+      "title": "토큰·키·서명이란 무엇인가",
+      "body": "토큰·키·서명이란 무엇인가 — 짧게 정리하고 갑니다.\n\n토큰만 검사하는 API는 \"키를 가진 누군가가 보냈다\"는 알아도 \"요청 내용이 도중에 바뀌지 않았는가\"는 모른다. 토큰을 주워 그대로 쓰거나, 유효한 요청의 본문만 바꾼 공격자가 통과한다.\n\n즉 토큰은 \"이걸 가진 사람\"을, 서명은 \"이 내용을 이 비밀을 가진 쪽이 보냈다\"를 증명한다. 토큰을 서명 자리에 쓰면 무결성이 빈다.\n\n원문에는 취약한 코드 → 공격 원리 → 방어 구현까지 코드로 정리돼 있어요.\n\n👉 전문 보기: https://samchil.dev/blog/ko/tokens-keys-signatures?utm_source=velog&utm_medium=referral&utm_campaign=tokens-keys-signatures",
+      "tags": [
+        "security",
+        "L1",
+        "ladder",
+        "access"
+      ]
+    },
+    "tistory": {
+      "lang": "ko",
+      "canonical": "https://samchil.dev/blog/ko/tokens-keys-signatures",
+      "title": "토큰·키·서명이란 무엇인가",
+      "body": "토큰만 검사하는 API는 \"키를 가진 누군가가 보냈다\"는 알아도 \"요청 내용이 도중에 바뀌지 않았는가\"는 모른다. 토큰을 주워 그대로 쓰거나, 유효한 요청의 본문만 바꾼 공격자가 통과한다.\n\nAPI 토큰·키·서명의 차이를 접근통제 관점에서 정리한다. token vs key vs signature — 무엇을 증명하고 무엇을 막지 못하는가.\n\n이 글에서 함께 점검하는 것:\n- 접근통제(access): 토큰(\"누가\") 외에 요청 본문을 서명으로 묶었는가\n- bearer 토큰을 TLS 위에서만 보내고 URL·로그에 노출하지 않는가\n- 토큰·서명 비교가 상수시간(timingSafeEqual)인가\n\n자세한 코드와 공격 시나리오는 원문에서 확인하세요.\n\n👉 전문 보기: https://samchil.dev/blog/ko/tokens-keys-signatures?utm_source=tistory&utm_medium=referral&utm_campaign=tokens-keys-signatures",
+      "tags": [
+        "security",
+        "L1",
+        "ladder",
+        "access"
+      ]
+    }
+  }
+}

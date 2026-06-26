@@ -2,36 +2,134 @@
   "_doc": "Detailed source evidence (NOT rendered on the blog). The post body shows only summarySources; full cross-validation lives here. One claim = >=2 independent sources (crossChecked) before it may appear in the post.",
   "slug": "tokens-keys-signatures",
   "collected": "2026-06-27",
-  "status": "stub",
-  "summarySources": ["MDN", "OWASP", "RFC 2104 (HMAC)"],
+  "status": "researched",
+  "summarySources": ["RFC 6750 (Bearer Token)", "RFC 2104 (HMAC)", "AWS SigV4", "OWASP", "MDN"],
   "claims": [
     {
       "id": "c1",
-      "statement": "HMAC proves both the sender (shared secret) and message integrity.",
+      "statement": "A bearer token is a security token where any party in possession of it can use it; using it does not require proving possession of a cryptographic key (no proof-of-possession). So possession alone grants access.",
       "crossChecked": true,
       "sources": [
         {
-          "title": "RFC 2104 — HMAC: Keyed-Hashing for Message Authentication",
+          "title": "RFC 6750 — The OAuth 2.0 Authorization Framework: Bearer Token Usage, §1.2",
           "publisher": "IETF",
-          "url": "https://www.rfc-editor.org/rfc/rfc2104",
+          "url": "https://www.rfc-editor.org/rfc/rfc6750.html",
           "tier": "primary",
-          "accessed": "2026-06-27"
+          "accessed": "2026-06-27",
+          "quote": "A security token with the property that any party in possession of the token (a \"bearer\") can use the token in any way that any other party in possession of it can. Using a bearer token does not require a bearer to prove possession of cryptographic key material (proof-of-possession)."
         },
         {
-          "title": "Crypto: HMAC",
-          "publisher": "MDN Web Docs",
-          "url": "https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/sign",
+          "title": "API Keys vs tokens: Understanding the differences in authentication",
+          "publisher": "Tyk",
+          "url": "https://tyk.io/learning-center/api-keys-vs-tokens-understanding-the-differences-in-authentication/",
           "tier": "secondary",
-          "accessed": "2026-06-27"
+          "accessed": "2026-06-27",
+          "note": "An API key is a string the server uses to identify and validate a caller; it identifies the caller (possession), not message integrity."
         }
       ],
-      "note": "STUB example. Replace with claims gathered during /blog-next research."
+      "note": "Definition from RFC 6750 (primary) corroborated by a reputable API-platform secondary."
     },
     {
       "id": "c2",
-      "statement": "Non-constant-time comparison of signatures can leak via a timing side-channel.",
+      "statement": "Because possession equals access, bearer tokens must be protected in storage and in transport, and clients MUST use TLS when sending them; a leaked token can be replayed by anyone.",
+      "crossChecked": true,
+      "sources": [
+        {
+          "title": "RFC 6750 — Bearer Token Usage (Abstract + §1, §5 Security Considerations)",
+          "publisher": "IETF",
+          "url": "https://www.rfc-editor.org/rfc/rfc6750.html",
+          "tier": "primary",
+          "accessed": "2026-06-27",
+          "quote": "bearer tokens need to be protected from disclosure in storage and in transport ... TLS is mandatory to implement and use with this specification."
+        },
+        {
+          "title": "What is a Bearer Token? Understanding API Authentication",
+          "publisher": "Postman",
+          "url": "https://blog.postman.com/what-is-a-bearer-token/",
+          "tier": "secondary",
+          "accessed": "2026-06-27",
+          "note": "Anyone holding the bearer token can use it; transmit only over HTTPS and avoid exposing it in URLs/logs."
+        }
+      ],
+      "note": "Primary spec requirement plus reputable secondary practitioner guidance."
+    },
+    {
+      "id": "c3",
+      "statement": "A request signature binds a credential to the exact bytes of the request: the server recomputes the signature and rejects the request if any signed element differs, so a signature proves both integrity (untampered) and authenticity (came from the secret holder). A bare token does neither — it is not bound to the request content.",
+      "crossChecked": true,
+      "sources": [
+        {
+          "title": "AWS Signature Version 4 for API requests — \"Why requests are signed\"",
+          "publisher": "Amazon Web Services",
+          "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv.html",
+          "tier": "primary",
+          "accessed": "2026-06-27",
+          "quote": "To prevent tampering with a request while it's in transit, some of the request elements are used to calculate a hash (digest) of the request ... When an AWS service receives the request, it uses the same information to calculate a hash and matches it against the hash value in your request. If the values don't match, AWS denies the request."
+        },
+        {
+          "title": "RFC 2104 — HMAC: Keyed-Hashing for Message Authentication",
+          "publisher": "IETF",
+          "url": "https://www.rfc-editor.org/rfc/rfc2104.html",
+          "tier": "primary",
+          "accessed": "2026-06-27",
+          "quote": "a mechanism for message authentication using cryptographic hash functions ... can be used to verify both the data integrity and the authenticity of a message."
+        }
+      ],
+      "note": "Two independent primary sources: a vendor signing protocol and the HMAC RFC, both binding the secret to the message."
+    },
+    {
+      "id": "c4",
+      "statement": "Symmetric authentication (HMAC, shared secret) lets only holders of the shared secret create AND verify the tag, so it gives no non-repudiation. Asymmetric signatures use a private key to sign and a public key to verify, so anyone can verify while only the private-key holder could have signed — providing non-repudiation.",
+      "crossChecked": true,
+      "sources": [
+        {
+          "title": "MACs, hashes, and signatures",
+          "publisher": "Microsoft Learn",
+          "url": "https://learn.microsoft.com/en-us/windows/uwp/security/macs-hashes-and-signatures",
+          "tier": "secondary",
+          "accessed": "2026-06-27",
+          "note": "MACs use a shared secret (symmetric); digital signatures use a private/public key pair and support verifying the signer's identity to third parties."
+        },
+        {
+          "title": "AWS SigV4a — asymmetric Signature Version 4 (public/private key)",
+          "publisher": "Amazon Web Services",
+          "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv.html",
+          "tier": "primary",
+          "accessed": "2026-06-27",
+          "quote": "SigV4a uses asymmetric signatures based on public-private key cryptography ... AWS verifies the signature using only the public half of the keypair ... Public keys are not secret and can't be used to sign requests."
+        }
+      ],
+      "note": "Symmetric-vs-asymmetric distinction and the non-repudiation property confirmed by Microsoft Learn and the AWS asymmetric-signing docs."
+    },
+    {
+      "id": "c5",
+      "statement": "Signing can also bound replay: a signed request is only valid for a short window. AWS SigV4, for example, rejects a request that does not reach AWS within a few minutes of the request timestamp.",
       "crossChecked": false,
       "sources": [
+        {
+          "title": "AWS Signature Version 4 for API requests — \"Why requests are signed\" (replay)",
+          "publisher": "Amazon Web Services",
+          "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv.html",
+          "tier": "primary",
+          "accessed": "2026-06-27",
+          "quote": "In most cases, a request must reach AWS within five minutes of the time stamp in the request. Otherwise, AWS denies the request."
+        }
+      ],
+      "note": "Single-vendor behavior — stated in the post as AWS-attributed example only, not a universal claim. Replay in depth is W6 (timestamp-nonce-replay)."
+    },
+    {
+      "id": "c6",
+      "statement": "Token and signature verification must use a constant-time comparison; ordinary === / string compare returns early on the first mismatching byte and leaks how many leading bytes matched, letting an attacker reconstruct a valid value byte by byte. Node.js exposes crypto.timingSafeEqual for this.",
+      "crossChecked": true,
+      "sources": [
+        {
+          "title": "Crypto: crypto.timingSafeEqual(a, b)",
+          "publisher": "Node.js Documentation",
+          "url": "https://nodejs.org/api/crypto.html",
+          "tier": "primary",
+          "accessed": "2026-06-27",
+          "note": "Compares two buffers in constant time; documented as suitable for comparing secrets/HMAC digests."
+        },
         {
           "title": "Timing Attack",
           "publisher": "OWASP",
@@ -40,7 +138,7 @@
           "accessed": "2026-06-27"
         }
       ],
-      "note": "crossChecked=false → needs a 2nd independent source before this claim may be stated as fact in the post."
+      "note": "Vendor API + OWASP attack reference (shared with hash-vs-encryption-hmac c7)."
     }
   ]
 }

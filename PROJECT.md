@@ -12,13 +12,13 @@ content/{posts/{ko,en},data} · backlog · schema · scripts · .github · .clau
 3대 규칙(백로그보충·교차검증리서치·ko→en) 프롬프트화. `.claude/commands/blog-next.md`.
 ### 🟢 검증 스크립트
 validate-frontmatter · quality-gate(§6) · check-backlog(<5 신호). `npm run ci`.
-### 🟢 첫 실제 글
-W2 `hash-vs-encryption-hmac`(L1, access·trace) 교차검증 리서치 기반 EN/KR 완성·게이트 통과(draft 아님). W1은 여전히 스텁(draft).
-> 다음: `/blog-next` 실행해 W3 `hmac-signing-done-right` 작성. 여유 시 W1 스텁도 실글로 교체.
+### 🟢 첫 실제 글 (W1·W2)
+W2 `hash-vs-encryption-hmac`(L1, access·trace) + W1 `tokens-keys-signatures`(L1, access) 모두 교차검증 리서치 기반 EN/KR 완성·게이트 통과(draft 아님). W1 스텁 → 정식 글 승격(token vs key vs signature, RFC 6750·SigV4 근거).
+> 다음: `/blog-next` 실행해 W3 `hmac-signing-done-right`(L2) 작성.
 
 ## 🔵 백로그
 ### 🔵 시드 8주(§8)
-W1~W8 topics.json에 등록. W1 drafted(스텁)·W2 drafted(실글), W3~W8 todo.
+W1~W8 topics.json에 등록. W1·W2 drafted(실글), W3~W8 todo.
 
 ## 🟢 본 사이트 연동
 ### 🟢 submodule `blog/` 소비 + Vercel 빌드

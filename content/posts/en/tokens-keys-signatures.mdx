@@ -5,45 +5,85 @@ lang: en
 level: L1
 axis: [access]
 series: ladder
-description: Tokens vs keys vs signatures, framed as access control — what each one proves, and what it cannot stop.
+description: Tokens vs keys vs signatures, framed as access control — token vs key vs signature, what each one proves and what it cannot stop.
 date: 2026-06-27
 canonical: https://samchil.dev/blog/tokens-keys-signatures
 hreflang: https://samchil.dev/blog/ko/tokens-keys-signatures
-draft: true
 ---
 
-{/* Stub demonstrating the 7-step template (blog.md §3). draft:true → quality gate warns only. Code is IDENTICAL to the ko version; only prose differs. */}
-
 ## 1. One-line threat
-If a request can be forged, the server cannot prove "did this really come from that caller."
+An API that only checks a token knows "someone holding the key sent this" — but **not whether the request body was changed in transit.** An attacker who picks up the token, or rewrites the body of an otherwise-valid request, sails through.
 
 ## 2. Concept
-A token is a badge, a key is a stamp, a signature is the sealed wax over the message. They prove _different things_.
+These three words don't belong on the same line. Each one proves *a different thing*.
+
+- **Token** = a *bearer credential*. Whoever holds it is treated as the caller. Pick one up and you can use it — it points (weakly) at "who," and says nothing about whether the contents are intact.
+- **Key** = *the secret itself*. Not an identity, but the **material you use to make and verify a signature**. Share the same secret on both sides and it's symmetric; sign with a private key and verify with a public one and it's asymmetric.
+- **Signature** = a *seal stamped over the request contents* with a key. Change one byte of the contents and the seal breaks. That's why it proves **integrity AND sender authenticity** together. Make it asymmetric and you also get **non-repudiation** — provable to a third party.
+
+So a token proves "the party holding this," while a signature proves "**this content** was sent by whoever holds **this secret**." Put a token where a signature belongs and integrity is missing.
+
+| Tool | Secret | Bound to request body? | Proves |
+|---|---|---|---|
+| Token (bearer) | possession = access | ✗ | identifies the holder (who) — anyone, once leaked |
+| Key | the secret itself | — | material for signing/verifying (proves nothing alone) |
+| Signature | made with a key | ✓ | integrity + authenticity (asymmetric = non-repudiation) |
 
 ## 3. Vulnerable code
+The most common pattern: "if the token matches, let it in." The body is never checked.
+
 ```ts
-// Trusting the token alone — a changed body goes unnoticed
-if (req.headers["x-token"] === SECRET) accept(req);
+// Anti-pattern: pass if the token string matches — the request body is ignored
+function authorize(token: string, body: string): boolean {
+  // body is accepted but never used in the check
+  return token === API_TOKEN; // possession check only + leaky === compare
+}
 ```
 
 ## 4. How the attack works
-A token proves "who." It says nothing about body integrity, so a man-in-the-middle can rewrite the payload and still pass.
+Three things overlap.
+
+1. **A token is a bearer credential.** RFC 6750 defines a bearer token as one that "any party in possession of it can use," with no need to prove possession of a cryptographic key. Leak it once — a log, a URL, a man-in-the-middle — and an attacker replays it verbatim.
+2. **A token is not bound to the request content.** Intercept a request carrying a valid token, rewrite the body (amount, recipient, path), and the token is still valid. The server never feels the change — the token says "who," never "what."
+3. **`===` leaks timing.** String comparison returns on the first mismatching byte, so how many leading bytes matched leaks through response time. An attacker reconstructs the token/tag one byte at a time.
 
 ## 5. The fix
+Split the jobs. **The token answers "who"**; **a signature answers "are the contents intact, and from whom."** Use the key (secret) to make an HMAC signature over the request body, binding the two, and compare in constant time.
+
 ```ts
-// HMAC over the body — if the body changes, the signature breaks
-const sig = hmacSHA256(SECRET, rawBody);
-if (timingSafeEqual(sig, req.headers["x-signature"])) accept(req);
+import { createHmac, timingSafeEqual } from "node:crypto";
+
+// Make a signature over the request body with the key (secret) — change the body, break the signature
+function sign(secret: string, body: string): Buffer {
+  return createHmac("sha256", secret).update(body).digest();
+}
+
+function verify(secret: string, body: string, sigHex: string): boolean {
+  const expected = sign(secret, body);
+  const got = Buffer.from(sigHex, "hex");
+  // timingSafeEqual throws on length mismatch → guard first
+  if (got.length !== expected.length) return false;
+  return timingSafeEqual(got, expected); // constant-time compare
+}
 ```
 
 | Decision | Why | Rejected |
 |---|---|---|
-| HMAC over the body | Proves identity AND integrity at once | Token alone: defenseless against body tampering |
-| Constant-time compare | Closes timing leak | `===`: compare time leaks information |
+| Identity via token, integrity via signature | A token proves only "who"; a signature binds the request content | Token alone: defenseless against body tampering and replay |
+| HMAC signature over the body | If the content changes the tag breaks → integrity + authenticity | No body check: an intercepted, rewritten request passes |
+| Constant-time compare (`timingSafeEqual`) | The number of matching bytes never leaks through timing | `===`: timing side-channel reconstructs the token/tag |
+| Asymmetric signature when third-party proof is needed | Private-key sign → public-key verify gives non-repudiation | HMAC: a shared secret can't prove to a third party who made it |
+
+> Send tokens **over TLS only**, never in URLs or logs. Possession equals access, so a leak is game over (RFC 6750). Bind a timestamp into the signature and you also narrow replay — AWS SigV4 only accepts a signed request for a few minutes. (Replay in depth is W6.)
 
 ## 6. Checklist
-- [ ] **access**: does the signature cover the entire body?
-- [ ] Is the comparison constant-time?
-- [ ] Are secrets in env / KMS?
+- [ ] **access**: beyond the token ("who"), is the request body **bound by a signature**?
+- [ ] Are bearer tokens sent **over TLS only**, kept out of URLs and logs?
+- [ ] Is the token/signature comparison **constant-time** (`timingSafeEqual`)?
+- [ ] Did you decide whether you need **non-repudiation** — symmetric (HMAC) vs asymmetric (public key)?
+- [ ] Do tokens have a **short lifetime + a revocation path**?
+- [ ] Are secrets (keys) in env / KMS, never in code or logs?
+
+<small>Sources: RFC 6750 · RFC 2104 · AWS SigV4 · OWASP · MDN</small>
 
 {/* 7. soft CTA — one line, only if a module relates. No ad tone. */}
