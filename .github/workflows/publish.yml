@@ -33,8 +33,10 @@ jobs:
 
       - name: 포인터가 움직였으면 commit & push
         run: |
+          # 이메일은 반드시 GitHub 계정에 매칭되는 주소여야 한다(=MAIN_REPO_PAT 소유자).
+          # Vercel은 커밋 author를 GitHub 계정에 귀속시키며, 매칭 불가 시 배포를 막는다.
           git config user.name  "samchil-blog-bot"
-          git config user.email "bot@samchil.dev"
+          git config user.email "293581528+soft37-git@users.noreply.github.com"
           git add blog
           if git diff --cached --quiet; then
             echo "포인터 변화 없음 — 발행할 것 없음."
