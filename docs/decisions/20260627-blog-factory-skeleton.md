@@ -1,0 +1,14 @@
+# 블로그 콘텐츠 팩토리 뼈대
+- 날짜: 2026-06-27
+- 결정: `samchil-dev-blog`를 **콘텐츠+자동화 전용 레포**로 스캐폴딩. 구동은 **Claude Code 커맨드(`/blog-next`)**, 검증은 **TypeScript 스크립트(CI)**.
+- 세부 결정:
+  - **구동 = 에이전트 + 검증 = 결정적 스크립트** 분리. 판단·웹검색(주제선정·교차검증·작성)은 `/blog-next` 오케스트레이터, frontmatter·품질게이트는 `npm run ci`.
+  - **교차검증 데이터 분리**: 상세 출처는 `content/data/<slug>.sources.json`(claim별 ≥2 독립출처, crossChecked 플래그). 블로그 본문은 `summarySources`만 노출. → 사용자 규칙 3.
+  - **백로그 신호화**: `check-backlog.ts`는 미작성<5면 보충 필요만 알리고 빌드는 실패시키지 않음. 실제 search+선정은 에이전트. → 사용자 규칙 1.
+  - **품질게이트**: Decision/Why/Rejected 표·코드블록≥2·sources 파일·ko/en 짝을 ERROR로, ‘공부일기’ 톤은 WARNING으로. draft:true는 skip.
+  - frontmatter 스키마는 zod 단일 SSOT(`schema/frontmatter.ts`), 필드명은 blog.md §4 고정.
+  - 발행 트리거 = quality-gate green → `deploy-hook.yml`이 본 사이트 Vercel Deploy Hook 호출.
+- 폐기 옵션:
+  - **순수 스크립트 + 검색 API 키** — 교차검증·톤판단을 코드로 구현해야 해 부담↑, LLM/검색 키 관리 부담. 폐기.
+  - **Python 파이프라인** — 본 사이트(TS)와 스택 분리. 정합성 저하로 폐기.
+  - **첫 글 즉시 실집필** — 이번 세션은 뼈대+스텁으로 한정(사용자 선택). 실집필은 `/blog-next`로 이관.

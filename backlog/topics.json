@@ -1,0 +1,95 @@
+{
+  "_doc": "Topic backlog (SSOT for what to write next). status: todo→researching→drafted→published. Seeded from blog.md §8. Replenish when unwritten < 5 (scripts/check-backlog.ts).",
+  "_meta": { "updated": "2026-06-27", "threshold": 5, "replenishBatch": 5 },
+  "topics": [
+    {
+      "slug": "tokens-keys-signatures",
+      "title_seed": "토큰/키/서명이란 무엇인가 — 접근통제의 출발",
+      "level": "L1",
+      "axis": ["access"],
+      "series": "ladder",
+      "week": 1,
+      "longtail": "api token vs key vs signature",
+      "status": "drafted",
+      "added": "2026-06-27"
+    },
+    {
+      "slug": "hash-vs-encryption-hmac",
+      "title_seed": "해시 vs 암호화, 그리고 HMAC은 왜 다른가",
+      "level": "L1",
+      "axis": ["access", "trace"],
+      "series": "ladder",
+      "week": 2,
+      "longtail": "hash vs encryption vs hmac difference",
+      "status": "todo",
+      "added": "2026-06-27"
+    },
+    {
+      "slug": "hmac-signing-done-right",
+      "title_seed": "HMAC 서명을 ‘바르게’ 쓰는 법 (취약 코드 → 방어)",
+      "level": "L2",
+      "axis": ["access"],
+      "series": "ladder",
+      "week": 3,
+      "longtail": "how to sign webhook requests with hmac correctly",
+      "status": "todo",
+      "module": "",
+      "added": "2026-06-27"
+    },
+    {
+      "slug": "input-validation-schema-limits",
+      "title_seed": "입력 검증: 스키마가 막는 것과 못 막는 것",
+      "level": "L2",
+      "axis": ["input"],
+      "series": "ladder",
+      "week": 4,
+      "longtail": "what schema validation cannot prevent",
+      "status": "todo",
+      "added": "2026-06-27"
+    },
+    {
+      "slug": "idempotency-keys",
+      "title_seed": "멱등성 — 같은 요청을 두 번 받아도 안전하려면",
+      "level": "L2",
+      "axis": ["input", "failsafe"],
+      "series": "ladder",
+      "week": 5,
+      "longtail": "idempotency key implementation api",
+      "status": "todo",
+      "added": "2026-06-27"
+    },
+    {
+      "slug": "timestamp-nonce-replay",
+      "title_seed": "타임스탬프와 논스: Replay 공격을 어떻게 끊는가",
+      "level": "L3",
+      "axis": ["access", "trace"],
+      "series": "ladder",
+      "week": 6,
+      "longtail": "prevent replay attack timestamp nonce",
+      "status": "todo",
+      "added": "2026-06-27"
+    },
+    {
+      "slug": "rate-limit-bypass-patterns",
+      "title_seed": "레이트리밋의 함정 — 우회되는 5가지 패턴",
+      "level": "L3",
+      "axis": ["failsafe"],
+      "series": "ladder",
+      "week": 7,
+      "longtail": "rate limiting bypass techniques",
+      "status": "todo",
+      "added": "2026-06-27"
+    },
+    {
+      "slug": "audit-trail-design",
+      "title_seed": "감사 추적은 로그가 아니다 — 책임을 증명하는 설계",
+      "level": "L4",
+      "axis": ["trace"],
+      "series": "ladder",
+      "week": 8,
+      "longtail": "audit trail vs logging design",
+      "status": "todo",
+      "added": "2026-06-27"
+    }
+  ]
+}

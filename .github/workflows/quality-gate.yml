@@ -1,0 +1,26 @@
+name: quality-gate
+
+# blog.md §6 — one miss = do not publish. Runs on every push/PR to content or scripts.
+on:
+  push:
+    branches: [main]
+    paths: ["content/**", "schema/**", "scripts/**", "backlog/**"]
+  pull_request:
+    paths: ["content/**", "schema/**", "scripts/**", "backlog/**"]
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Validate frontmatter (schema + ko/en pairing)
+        run: npm run validate
+      - name: Quality gate (Decision/Why/Rejected · code · sources · tone)
+        run: npm run gate
+      - name: Backlog health (signal only, never fails build)
+        run: npm run backlog:check

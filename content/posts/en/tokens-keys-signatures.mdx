@@ -1,0 +1,49 @@
+---
+title: What Tokens, Keys, and Signatures Actually Are
+slug: tokens-keys-signatures
+lang: en
+level: L1
+axis: [access]
+series: ladder
+description: Tokens vs keys vs signatures, framed as access control — what each one proves, and what it cannot stop.
+date: 2026-06-27
+canonical: https://samchil.dev/blog/tokens-keys-signatures
+hreflang: https://samchil.dev/blog/ko/tokens-keys-signatures
+draft: true
+---
+
+{/* Stub demonstrating the 7-step template (blog.md §3). draft:true → quality gate warns only. Code is IDENTICAL to the ko version; only prose differs. */}
+
+## 1. One-line threat
+If a request can be forged, the server cannot prove "did this really come from that caller."
+
+## 2. Concept
+A token is a badge, a key is a stamp, a signature is the sealed wax over the message. They prove _different things_.
+
+## 3. Vulnerable code
+```ts
+// Trusting the token alone — a changed body goes unnoticed
+if (req.headers["x-token"] === SECRET) accept(req);
+```
+
+## 4. How the attack works
+A token proves "who." It says nothing about body integrity, so a man-in-the-middle can rewrite the payload and still pass.
+
+## 5. The fix
+```ts
+// HMAC over the body — if the body changes, the signature breaks
+const sig = hmacSHA256(SECRET, rawBody);
+if (timingSafeEqual(sig, req.headers["x-signature"])) accept(req);
+```
+
+| Decision | Why | Rejected |
+|---|---|---|
+| HMAC over the body | Proves identity AND integrity at once | Token alone: defenseless against body tampering |
+| Constant-time compare | Closes timing leak | `===`: compare time leaks information |
+
+## 6. Checklist
+- [ ] **access**: does the signature cover the entire body?
+- [ ] Is the comparison constant-time?
+- [ ] Are secrets in env / KMS?
+
+{/* 7. soft CTA — one line, only if a module relates. No ad tone. */}

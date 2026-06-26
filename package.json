@@ -1,0 +1,19 @@
+{
+  "name": "samchil-dev-blog",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Content factory for samchil.dev/blog — MDX posts (ko/en) + automation. No rendering (main site renders).",
+  "type": "module",
+  "scripts": {
+    "blog:next": "echo 'Run via Claude Code: /blog-next  (orchestrator at .claude/commands/blog-next.md)'",
+    "backlog:check": "tsx scripts/check-backlog.ts",
+    "validate": "tsx scripts/validate-frontmatter.ts",
+    "gate": "tsx scripts/quality-gate.ts",
+    "ci": "npm run validate && npm run gate && npm run backlog:check"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "zod": "^3.23.0"
+  }
+}

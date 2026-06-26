@@ -1,0 +1,46 @@
+{
+  "_doc": "Detailed source evidence (NOT rendered on the blog). The post body shows only summarySources; full cross-validation lives here. One claim = >=2 independent sources (crossChecked) before it may appear in the post.",
+  "slug": "tokens-keys-signatures",
+  "collected": "2026-06-27",
+  "status": "stub",
+  "summarySources": ["MDN", "OWASP", "RFC 2104 (HMAC)"],
+  "claims": [
+    {
+      "id": "c1",
+      "statement": "HMAC proves both the sender (shared secret) and message integrity.",
+      "crossChecked": true,
+      "sources": [
+        {
+          "title": "RFC 2104 — HMAC: Keyed-Hashing for Message Authentication",
+          "publisher": "IETF",
+          "url": "https://www.rfc-editor.org/rfc/rfc2104",
+          "tier": "primary",
+          "accessed": "2026-06-27"
+        },
+        {
+          "title": "Crypto: HMAC",
+          "publisher": "MDN Web Docs",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/sign",
+          "tier": "secondary",
+          "accessed": "2026-06-27"
+        }
+      ],
+      "note": "STUB example. Replace with claims gathered during /blog-next research."
+    },
+    {
+      "id": "c2",
+      "statement": "Non-constant-time comparison of signatures can leak via a timing side-channel.",
+      "crossChecked": false,
+      "sources": [
+        {
+          "title": "Timing Attack",
+          "publisher": "OWASP",
+          "url": "https://owasp.org/www-community/attacks/Timing_attack",
+          "tier": "secondary",
+          "accessed": "2026-06-27"
+        }
+      ],
+      "note": "crossChecked=false → needs a 2nd independent source before this claim may be stated as fact in the post."
+    }
+  ]
+}
