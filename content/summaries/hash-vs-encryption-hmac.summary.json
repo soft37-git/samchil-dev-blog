@@ -1,0 +1,47 @@
+{
+  "_doc": "외부 재게재 요약 초안(자동 생성). status:draft → 사람 검수 후 게시. 실제 플랫폼 게시는 미자동화(추후). canonical=자기 언어 원본.",
+  "slug": "hash-vs-encryption-hmac",
+  "generated": "2026-06-26",
+  "status": "draft",
+  "platforms": {
+    "medium": {
+      "lang": "en",
+      "canonical": "https://samchil.dev/blog/hash-vs-encryption-hmac",
+      "title": "Hash vs Encryption vs HMAC — Why HMAC Is Different",
+      "body": "Attaching a hash to a request feels safe — until an attacker, without knowing your secret, forges a valid hash for a tampered message and sails through. — The hash vs encryption vs hmac difference, framed by access control and traceability — what each one guarantees, and what it cannot.\n\n👉 Read the full post: https://samchil.dev/blog/hash-vs-encryption-hmac",
+      "tags": [
+        "security",
+        "L1",
+        "ladder",
+        "access",
+        "trace"
+      ]
+    },
+    "velog": {
+      "lang": "ko",
+      "canonical": "https://samchil.dev/blog/ko/hash-vs-encryption-hmac",
+      "title": "해시 vs 암호화, 그리고 HMAC은 왜 다른가",
+      "body": "요청에 해시를 붙였다고 안심하면, 공격자는 비밀을 모른 채 위변조된 메시지에 맞는 유효한 해시를 만들어 통과한다. — 해시 vs 암호화 vs HMAC 차이를 접근통제·추적 관점에서 정리한다. 셋은 각각 무엇을 보장하고, 무엇을 보장하지 못하는가.\n\n👉 전문 보기: https://samchil.dev/blog/ko/hash-vs-encryption-hmac",
+      "tags": [
+        "security",
+        "L1",
+        "ladder",
+        "access",
+        "trace"
+      ]
+    },
+    "tistory": {
+      "lang": "ko",
+      "canonical": "https://samchil.dev/blog/ko/hash-vs-encryption-hmac",
+      "title": "해시 vs 암호화, 그리고 HMAC은 왜 다른가",
+      "body": "요청에 해시를 붙였다고 안심하면, 공격자는 비밀을 모른 채 위변조된 메시지에 맞는 유효한 해시를 만들어 통과한다. — 해시 vs 암호화 vs HMAC 차이를 접근통제·추적 관점에서 정리한다. 셋은 각각 무엇을 보장하고, 무엇을 보장하지 못하는가.\n\n👉 전문 보기: https://samchil.dev/blog/ko/hash-vs-encryption-hmac",
+      "tags": [
+        "security",
+        "L1",
+        "ladder",
+        "access",
+        "trace"
+      ]
+    }
+  }
+}

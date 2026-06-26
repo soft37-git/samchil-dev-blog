@@ -1,0 +1,95 @@
+---
+title: 해시 vs 암호화, 그리고 HMAC은 왜 다른가
+slug: hash-vs-encryption-hmac
+lang: ko
+level: L1
+axis: [access, trace]
+series: ladder
+description: 해시 vs 암호화 vs HMAC 차이를 접근통제·추적 관점에서 정리한다. 셋은 각각 무엇을 보장하고, 무엇을 보장하지 못하는가.
+date: 2026-06-26
+canonical: https://samchil.dev/blog/ko/hash-vs-encryption-hmac
+hreflang: https://samchil.dev/blog/hash-vs-encryption-hmac
+---
+
+## 1. 한 줄 위협
+요청에 해시를 붙였다고 안심하면, 공격자는 비밀을 모른 채 **위변조된 메시지에 맞는 유효한 해시**를 만들어 통과한다.
+
+## 2. 개념
+세 도구는 보호하는 대상이 다르다. 한 문장 비유로 시작하자.
+
+- **해시(hash)** = 문서를 갈아 만든 *지문*. 같은 문서는 같은 지문을 내지만, 지문에서 문서를 복원할 수는 없다. **단방향**이다.
+- **암호화(encryption)** = 내용을 잠근 *금고*. 키가 있으면 다시 연다. **양방향**이다 — 목적은 기밀성.
+- **HMAC** = 비밀 도장이 찍힌 *봉인*. 비밀 키를 가진 사람만 같은 봉인을 만들 수 있다. 목적은 **인증(신원 + 무결성)**.
+
+즉 해시는 "내용이 그대로인가", 암호화는 "남이 못 읽는가", HMAC은 "**누가** 보냈고 **바뀌지 않았는가"를 답한다. 보안 설계에서 셋을 바꿔 쓰면 구멍이 난다.
+
+| 도구 | 키 | 방향 | 보장 |
+|---|---|---|---|
+| 해시 | 없음 | 단방향 | 무결성(키 없음 → 인증 ✗) |
+| 암호화 | 있음 | 양방향 | 기밀성(무결성 ✗) |
+| HMAC | 공유 비밀 | 단방향 | 무결성 + 인증 |
+
+## 3. 취약한 코드
+"본문이 바뀌었는지 확인하려고" 해시를 붙이는 흔한 패턴이다. 비밀을 앞에 이어 붙여 인증까지 되리라 기대한다.
+
+```ts
+import { createHash } from "node:crypto";
+
+// 안티패턴: Hash(secret || message) 를 인증 태그로 사용
+function sign(secret: string, body: string): string {
+  return createHash("sha256").update(secret + body).digest("hex");
+}
+
+function verify(secret: string, body: string, tag: string): boolean {
+  return sign(secret, body) === tag; // 동등 비교까지 취약
+}
+```
+
+## 4. 공격 원리
+두 가지가 동시에 무너진다.
+
+1. **키 없는 해시는 인증이 아니다.** 해시는 누구나 계산할 수 있는 공개 함수다. 비밀이 섞이지 않으면, 본문을 바꾼 공격자도 새 본문의 해시를 그대로 다시 계산해 붙이면 된다. 검증자는 차이를 못 느낀다.
+2. **`Hash(secret || message)` 는 길이확장 공격에 뚫린다.** SHA-256·SHA-1·MD5 같은 Merkle–Damgård 해시는, 공격자가 `H(secret||body)`와 `secret` 길이만 알면 **비밀을 모른 채** `H(secret || body || padding || extra)`를 계산해낼 수 있다. 즉 메시지에 데이터를 덧붙인 위조 태그가 만들어진다. (SHA-384·SHA-512/256·SHA-3는 이 공격에 면역이지만, "해시만으로 인증"이라는 1번 결함은 그대로 남는다.)
+
+비교를 `===`로 한 것도 별도 문제다. 문자열 비교는 첫 불일치 바이트에서 즉시 끝나므로, **앞에서 몇 바이트가 맞았는지**가 응답 시간으로 새어 나간다. 공격자는 시간 차를 측정해 태그를 한 바이트씩 맞춰 나갈 수 있다.
+
+## 5. 방어 구현
+인증이 필요하면 **HMAC**을 쓴다. HMAC은 키를 안팎 두 번 섞는 중첩 구조라 길이확장 공격이 통하지 않는다. 비교는 상수시간으로 한다.
+
+```ts
+import { createHmac, timingSafeEqual } from "node:crypto";
+
+// HMAC = H(K XOR opad, H(K XOR ipad, text)) — 라이브러리가 중첩 구조를 처리
+function sign(secret: string, body: string): Buffer {
+  return createHmac("sha256", secret).update(body).digest();
+}
+
+function verify(secret: string, body: string, tagHex: string): boolean {
+  const expected = sign(secret, body);
+  const got = Buffer.from(tagHex, "hex");
+  // 길이가 다르면 timingSafeEqual이 throw → 먼저 막는다
+  if (got.length !== expected.length) return false;
+  return timingSafeEqual(got, expected); // 상수시간 비교
+}
+```
+
+| Decision | Why | Rejected |
+|---|---|---|
+| 인증엔 HMAC | 비밀 키 기반 → 무결성 + 신원을 함께 증명 | 순수 해시: 키가 없어 누구나 위조 |
+| 비밀을 키로 주입(`createHmac(secret, …)`) | 중첩 키잉이 길이확장 차단 | `Hash(secret + body)`: Merkle–Damgård 길이확장에 취약 |
+| `timingSafeEqual` 상수시간 비교 | 매칭 바이트 수가 시간으로 누출되지 않음 | `===`: 타이밍 사이드채널로 태그 추정 |
+| 기밀이 필요하면 별도로 암호화 | 암호화는 기밀성 전용, 무결성 보장 아님 | "암호화했으니 안전": CBC 등은 비트플리핑으로 변조 가능 |
+
+> 기밀성까지 필요하면 인증된 암호화(AES-GCM 등) 또는 Encrypt-then-MAC를 쓴다. 암호화 단독은 변조를 막지 못한다.
+
+## 6. 실전 체크리스트
+- [ ] **접근통제(access)**: 메시지 인증에 순수 해시가 아니라 **HMAC(또는 서명)** 을 쓰는가
+- [ ] 비밀을 `Hash(secret + body)`로 이어 붙이지 않았는가(길이확장)
+- [ ] 태그 비교가 **상수시간**(`timingSafeEqual`)인가
+- [ ] **추적(trace)**: 검증 실패를 키·태그 노출 없이 로깅하는가
+- [ ] 기밀이 필요하면 인증된 암호화/Encrypt-then-MAC를 쓰는가
+- [ ] 비밀은 환경변수·KMS에 있고 코드·로그에 없는가
+
+<small>출처: RFC 2104 · NIST FIPS 180-4 · OWASP · MDN</small>
+
+{/* 7. soft CTA — 연계 모듈 있을 때만 한 줄. 광고 톤 금지. */}

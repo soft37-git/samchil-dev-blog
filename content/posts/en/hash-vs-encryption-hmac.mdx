@@ -1,0 +1,95 @@
+---
+title: Hash vs Encryption vs HMAC — Why HMAC Is Different
+slug: hash-vs-encryption-hmac
+lang: en
+level: L1
+axis: [access, trace]
+series: ladder
+description: The hash vs encryption vs hmac difference, framed by access control and traceability — what each one guarantees, and what it cannot.
+date: 2026-06-26
+canonical: https://samchil.dev/blog/hash-vs-encryption-hmac
+hreflang: https://samchil.dev/blog/ko/hash-vs-encryption-hmac
+---
+
+## 1. The threat in one line
+Attaching a hash to a request feels safe — until an attacker, without knowing your secret, forges a **valid hash for a tampered message** and sails through.
+
+## 2. The concept
+The three tools protect different things. Start with one analogy each.
+
+- **Hash** = a *fingerprint* of a document. The same document yields the same fingerprint, but you cannot rebuild the document from the print. It is **one-way**.
+- **Encryption** = a *safe* that locks the contents. With the key you open it again. It is **two-way** — its goal is confidentiality.
+- **HMAC** = a *wax seal* stamped with a secret signet. Only the holder of the secret key can produce the same seal. Its goal is **authentication (identity + integrity)**.
+
+So a hash answers "is the content unchanged?", encryption answers "can others read it?", and HMAC answers "**who** sent it, and was it **untampered**?" Swap them in a security design and you open a hole.
+
+| Tool | Key | Direction | Guarantees |
+|---|---|---|---|
+| Hash | none | one-way | integrity (no key → no authentication) |
+| Encryption | yes | two-way | confidentiality (not integrity) |
+| HMAC | shared secret | one-way | integrity + authentication |
+
+## 3. The vulnerable code
+A common pattern: attach a hash "to check whether the body changed," prepending the secret in the hope it also authenticates.
+
+```ts
+import { createHash } from "node:crypto";
+
+// Anti-pattern: using Hash(secret || message) as an auth tag
+function sign(secret: string, body: string): string {
+  return createHash("sha256").update(secret + body).digest("hex");
+}
+
+function verify(secret: string, body: string, tag: string): boolean {
+  return sign(secret, body) === tag; // the equality check is vulnerable too
+}
+```
+
+## 4. How the attack works
+Two things collapse at once.
+
+1. **A keyless hash is not authentication.** A hash is a public function anyone can compute. With no secret mixed in, an attacker who changes the body simply recomputes the hash of the new body and attaches it. The verifier notices nothing.
+2. **`Hash(secret || message)` falls to a length-extension attack.** Merkle–Damgård hashes like SHA-256, SHA-1, and MD5 let an attacker who knows `H(secret||body)` and the length of `secret` compute `H(secret || body || padding || extra)` **without knowing the secret** — a forged tag for a message with extra data appended. (SHA-384, SHA-512/256, and SHA-3 are immune to this, but flaw #1 — "a hash alone authenticates" — still stands.)
+
+Using `===` for the comparison is a separate problem. String comparison stops at the first mismatching byte, so **how many leading bytes matched** leaks through response timing. By measuring those differences, an attacker can recover the tag one byte at a time.
+
+## 5. The defense
+When you need authentication, use **HMAC**. HMAC mixes the key twice in a nested construction, so length-extension does not apply. Compare in constant time.
+
+```ts
+import { createHmac, timingSafeEqual } from "node:crypto";
+
+// HMAC = H(K XOR opad, H(K XOR ipad, text)) — the library handles the nesting
+function sign(secret: string, body: string): Buffer {
+  return createHmac("sha256", secret).update(body).digest();
+}
+
+function verify(secret: string, body: string, tagHex: string): boolean {
+  const expected = sign(secret, body);
+  const got = Buffer.from(tagHex, "hex");
+  // mismatched length makes timingSafeEqual throw → block it first
+  if (got.length !== expected.length) return false;
+  return timingSafeEqual(got, expected); // constant-time comparison
+}
+```
+
+| Decision | Why | Rejected |
+|---|---|---|
+| HMAC for authentication | secret-key based → proves integrity + identity together | plain hash: no key, so anyone can forge |
+| Inject the secret as the key (`createHmac(secret, …)`) | nested keying blocks length-extension | `Hash(secret + body)`: vulnerable to Merkle–Damgård length-extension |
+| `timingSafeEqual` constant-time compare | the count of matching bytes does not leak via timing | `===`: timing side-channel reveals the tag |
+| Encrypt separately if you need secrecy | encryption is for confidentiality, not integrity | "it's encrypted, so it's safe": CBC etc. can be tampered via bit-flipping |
+
+> If you also need confidentiality, use authenticated encryption (AES-GCM) or Encrypt-then-MAC. Encryption alone does not stop tampering.
+
+## 6. Field checklist
+- [ ] **Access control**: do you use **HMAC (or a signature)**, not a bare hash, for message authentication?
+- [ ] No `Hash(secret + body)` prefix construction (length-extension)?
+- [ ] Is the tag comparison **constant-time** (`timingSafeEqual`)?
+- [ ] **Traceability**: are verification failures logged without exposing keys or tags?
+- [ ] When confidentiality is needed, do you use authenticated encryption / Encrypt-then-MAC?
+- [ ] Are secrets in env vars or a KMS — never in code or logs?
+
+<small>Sources: RFC 2104 · NIST FIPS 180-4 · OWASP · MDN</small>
+
+{/* 7. soft CTA — one line only when a related module exists. No ad tone. */}

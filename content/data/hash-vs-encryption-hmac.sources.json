@@ -1,0 +1,198 @@
+{
+  "_doc": "Detailed source evidence (NOT rendered on the blog). The post body shows only summarySources; full cross-validation lives here. One claim = >=2 independent sources (crossChecked) before it may appear in the post.",
+  "slug": "hash-vs-encryption-hmac",
+  "collected": "2026-06-27",
+  "status": "researched",
+  "summarySources": ["RFC 2104 (HMAC)", "NIST FIPS 180-4", "OWASP", "MDN"],
+  "claims": [
+    {
+      "id": "c1",
+      "statement": "A cryptographic hash is a one-way function: it maps arbitrary-length input to a fixed-length digest and is computationally infeasible to invert (preimage resistance), so you cannot recover the input from the output.",
+      "crossChecked": true,
+      "sources": [
+        {
+          "title": "Secure Hash Standard (SHS) — FIPS 180-4",
+          "publisher": "NIST",
+          "url": "https://csrc.nist.gov/pubs/fips/180-4/upd1/final",
+          "tier": "primary",
+          "accessed": "2026-06-27"
+        },
+        {
+          "title": "Hash function (Glossary)",
+          "publisher": "MDN Web Docs",
+          "url": "https://developer.mozilla.org/en-US/docs/Glossary/Hash_function",
+          "tier": "secondary",
+          "accessed": "2026-06-27",
+          "quote": "one-way: given the output, it should be impractical or impossible to regenerate the original input"
+        },
+        {
+          "title": "Cryptographic hash function",
+          "publisher": "Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/Cryptographic_hash_function",
+          "tier": "secondary",
+          "accessed": "2026-06-27",
+          "quote": "a one-directional mathematical operation which is quick to calculate, yet hard to reverse"
+        }
+      ],
+      "note": "Three independent sources; primary (NIST) + two reputable secondaries."
+    },
+    {
+      "id": "c2",
+      "statement": "Encryption is reversible: with the correct key, ciphertext can be decrypted back to plaintext. Its goal is confidentiality, which is the opposite design intent from a one-way hash.",
+      "crossChecked": true,
+      "sources": [
+        {
+          "title": "Cryptographic hash function (contrast with encryption)",
+          "publisher": "Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/Cryptographic_hash_function",
+          "tier": "secondary",
+          "accessed": "2026-06-27",
+          "quote": "Whereas encryption is reversible (you can decrypt ciphertext back to plaintext using a key), cryptographic hashing is not."
+        },
+        {
+          "title": "Cryptographic Storage Cheat Sheet",
+          "publisher": "OWASP",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html",
+          "tier": "secondary",
+          "accessed": "2026-06-27",
+          "note": "Authenticated encryption modes 'provide guarantees of the integrity and authenticity of the data, as well as confidentiality' — encryption's job is confidentiality."
+        }
+      ],
+      "note": "Two independent reputable secondaries."
+    },
+    {
+      "id": "c3",
+      "statement": "A bare hash provides no authentication: because no secret is involved, anyone who alters the message can recompute a matching digest. Authentication requires a secret key.",
+      "crossChecked": true,
+      "sources": [
+        {
+          "title": "RFC 2104 — HMAC: Keyed-Hashing for Message Authentication",
+          "publisher": "IETF",
+          "url": "https://www.rfc-editor.org/rfc/rfc2104.html",
+          "tier": "primary",
+          "accessed": "2026-06-27",
+          "quote": "a mechanism for message authentication using cryptographic hash functions ... requires a cryptographic hash function H and a secret key K"
+        },
+        {
+          "title": "Cryptographic Storage Cheat Sheet",
+          "publisher": "OWASP",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html",
+          "tier": "secondary",
+          "accessed": "2026-06-27",
+          "note": "A MAC provides integrity and authenticity (alteration detected + origin verified); a keyless hash does not."
+        }
+      ],
+      "note": "Keyed authentication necessity stated by RFC 2104 and corroborated by OWASP."
+    },
+    {
+      "id": "c4",
+      "statement": "HMAC = H(K XOR opad, H(K XOR ipad, text)). It requires a shared secret key K plus a hash function H, and provides message authentication: verifying both data integrity and the authenticity of the sender.",
+      "crossChecked": true,
+      "sources": [
+        {
+          "title": "RFC 2104 — HMAC: Keyed-Hashing for Message Authentication",
+          "publisher": "IETF",
+          "url": "https://www.rfc-editor.org/rfc/rfc2104.html",
+          "tier": "primary",
+          "accessed": "2026-06-27",
+          "quote": "H(K XOR opad, H(K XOR ipad, text))"
+        },
+        {
+          "title": "The Keyed-Hash Message Authentication Code (HMAC) — FIPS 198-1",
+          "publisher": "NIST",
+          "url": "https://csrc.nist.gov/pubs/fips/198-1/final",
+          "tier": "primary",
+          "accessed": "2026-06-27",
+          "note": "US federal standard adopting the same HMAC construction."
+        },
+        {
+          "title": "Crypto: createHmac / timingSafeEqual",
+          "publisher": "Node.js Documentation",
+          "url": "https://nodejs.org/api/crypto.html",
+          "tier": "primary",
+          "accessed": "2026-06-27",
+          "note": "Vendor API implementing HMAC used in the post's code."
+        }
+      ],
+      "note": "Formula and properties from RFC 2104; standardized by FIPS 198-1."
+    },
+    {
+      "id": "c5",
+      "statement": "The naive MAC Hash(secret || message) is broken by a length-extension attack on Merkle-Damgard hashes (MD5, SHA-1, SHA-256, SHA-512): knowing H(x) and len(x), an attacker computes H(x || y) without the secret. SHA-384, SHA-512/256, and SHA-3 are not susceptible, and HMAC is not vulnerable by design.",
+      "crossChecked": true,
+      "sources": [
+        {
+          "title": "Length extension attack",
+          "publisher": "Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/Length_extension_attack",
+          "tier": "secondary",
+          "accessed": "2026-06-27",
+          "quote": "HMAC ... uses a different construction and so is not vulnerable to length extension attacks"
+        },
+        {
+          "title": "Length-extension attacks are still a thing",
+          "publisher": "Frank Denis (00f.net)",
+          "url": "https://00f.net/2025/10/23/length-extension-attacks/",
+          "tier": "secondary",
+          "accessed": "2026-06-27"
+        },
+        {
+          "title": "RFC 2104 (security of nested construction)",
+          "publisher": "IETF",
+          "url": "https://www.rfc-editor.org/rfc/rfc2104.html",
+          "tier": "primary",
+          "accessed": "2026-06-27",
+          "note": "Nested inner/outer keying is the design that resists this class of attack."
+        }
+      ],
+      "note": "Vulnerable-algorithm list and HMAC immunity confirmed across three independent sources."
+    },
+    {
+      "id": "c6",
+      "statement": "Encryption alone does not guarantee integrity or authenticity; ciphertext in unauthenticated modes (e.g. AES-CBC) can be modified (bit-flipping). Use authenticated encryption (GCM/CCM) or Encrypt-then-MAC.",
+      "crossChecked": true,
+      "sources": [
+        {
+          "title": "Cryptographic Storage Cheat Sheet",
+          "publisher": "OWASP",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html",
+          "tier": "secondary",
+          "accessed": "2026-06-27",
+          "quote": "As these do not provide any guarantees about the authenticity of the data, separate authentication should be implemented, such as using the Encrypt-then-MAC technique."
+        },
+        {
+          "title": "Testing for Padding Oracle (WSTG)",
+          "publisher": "OWASP Web Security Testing Guide",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/09-Testing_for_Weak_Cryptography/02-Testing_for_Padding_Oracle",
+          "tier": "secondary",
+          "accessed": "2026-06-27",
+          "note": "Demonstrates that unauthenticated CBC ciphertext can be manipulated."
+        }
+      ],
+      "note": "Two independent OWASP references."
+    },
+    {
+      "id": "c7",
+      "statement": "HMAC verification must use a constant-time comparison; ordinary === / string compare returns early on the first mismatching byte and leaks how many leading bytes matched, letting an attacker reconstruct a valid tag byte by byte. Node.js exposes crypto.timingSafeEqual for this.",
+      "crossChecked": true,
+      "sources": [
+        {
+          "title": "Crypto: crypto.timingSafeEqual(a, b)",
+          "publisher": "Node.js Documentation",
+          "url": "https://nodejs.org/api/crypto.html",
+          "tier": "primary",
+          "accessed": "2026-06-27",
+          "note": "Compares two buffers in constant time; documented as suitable for comparing HMAC digests."
+        },
+        {
+          "title": "Timing Attack",
+          "publisher": "OWASP",
+          "url": "https://owasp.org/www-community/attacks/Timing_attack",
+          "tier": "secondary",
+          "accessed": "2026-06-27"
+        }
+      ],
+      "note": "Vendor API + OWASP attack reference."
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+name: Publish to site
+
+# 글이 main에 올라오면 본 사이트(main 레포)의 `blog` submodule 포인터를
+# 최신으로 올린다. 그 포인터 커밋이 Vercel의 일반 git 빌드를 트리거하고,
+# 빌드가 submodule을 새 SHA로 클론하며 새 글이 게재된다.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "content/posts/**"   # 글 변경에만 반응
+
+# 포인터를 두 런이 동시에 밀지 않게
+concurrency:
+  group: publish-to-site
+  cancel-in-progress: false
+
+jobs:
+  bump-pointer:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 본 사이트 레포
+        uses: actions/checkout@v4
+        with:
+          repository: soft37-git/samchil-dev
+          token: ${{ secrets.MAIN_REPO_PAT }}   # fine-grained PAT · Contents: Read and write
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: blog submodule을 최신 main으로
+        run: |
+          git -C blog fetch origin main
+          git -C blog checkout --detach origin/main
+
+      - name: 포인터가 움직였으면 commit & push
+        run: |
+          git config user.name  "samchil-blog-bot"
+          git config user.email "bot@samchil.dev"
+          git add blog
+          if git diff --cached --quiet; then
+            echo "포인터 변화 없음 — 발행할 것 없음."
+            exit 0
+          fi
+          git commit -m "content: publish blog @ ${{ github.sha }}"
+          git push origin main
