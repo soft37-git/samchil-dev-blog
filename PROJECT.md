@@ -1,5 +1,5 @@
 # Samchil Blog — 콘텐츠 팩토리
-> 버전: 0.1.0 | 마지막 업데이트: 2026-06-27 (W2 발행·라이브 게재, 발행 라인 완성)
+> 버전: 0.1.0 | 마지막 업데이트: 2026-06-27 (외부 배포 export 라인 완성 + 플랫폼별 차별 요약 + CTA UTM)
 
 이 레포 = **콘텐츠(MDX ko/en) + 자동화**만. 렌더링은 본 사이트(samchil-dev)가 전담. URL은 `samchil.dev/blog` 단일 오리진. → [[blog]] §9 · [[docs/decisions/20260627-blog-factory-skeleton]]
 
@@ -26,9 +26,11 @@ W1~W8 topics.json에 등록. W1 drafted(스텁)·W2 drafted(실글), W3~W8 todo.
 ### 🟢 발행 전파 = submodule 포인터 bump
 `publish.yml`이 content/posts 변경 시 본 사이트 포인터 bump → Vercel 빌드. `MAIN_REPO_PAT` 등록 완료, 커밋 author는 GitHub 매칭 noreply여야 Vercel 통과(이슈 해결). → [[docs/decisions/20260626-publish-via-submodule-pointer]] · [[docs/decisions/20260627-blog-publish-live]]
 
-## 🔵 외부 배포
+## 🟢 외부 배포
 ### 🟢 요약 초안 생성(반자동)
-`scripts/make-summary.ts`(`npm run summary`) → `content/summaries/<slug>.summary.json`. en→Medium, ko→Velog/Tistory, canonical=자기 언어 원본. status:draft.
-### ⚪ 외부 발행 자동화 (추후)
-플랫폼 API 게시(Medium/Velog/Tistory)는 **아직 미구현 — 수동 게시**. 인증·외부 발행이라 신중히, 추후 별도 워크플로로 자동화 예정(초안 생성까지만 자동, 게시는 사람 확인 후).
-> 다음: 요약 초안 톤 검수 후 수동 게시. 자동 게시는 별도 세션.
+`scripts/make-summary.ts`(`npm run summary`) → `content/summaries/<slug>.summary.json`. en→Medium, ko→Velog/Tistory, canonical=자기 언어 원본, status:draft. **플랫폼별 톤·형식·끌어오는 섹션 차별화**(Medium 비유·Velog 한방·Tistory 점검리스트), 호기심형 티저. 본문 CTA 링크엔 플랫폼별 UTM(`utm_source=<플랫폼>`·`medium=referral`·`campaign=<slug>`); canonical은 깨끗하게 유지.
+### 🔴 플랫폼 API 자동 게시 (폐기)
+실측 결과 공식 게시 API 전멸: Tistory 종료·Medium 신규토큰 중단(미보유)·Velog 부재. REST 자동 게시 불가. → [[docs/decisions/20260627-external-publish-export-only]]
+### 🟢 export-only 수동 게시 라인
+`scripts/make-export.ts`(`npm run export [-- <slug>] [--copy <platform>]`) → `content/exports/<slug>/{medium,velog,tistory}.md` + `_post.md` 체크리스트. `/blog-next` Phase 5에 편입(요약→export 자동, 게시는 사람). W2로 검증 완료. → [[docs/specs/external-export]]
+> 다음: 발행된 글마다 `/blog-next`가 export까지 생성 → `_post.md` 따라 수동 게시.

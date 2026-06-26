@@ -10,6 +10,7 @@
     "validate": "tsx scripts/validate-frontmatter.ts",
     "gate": "tsx scripts/quality-gate.ts",
     "summary": "tsx scripts/make-summary.ts",
+    "export": "tsx scripts/make-export.ts",
     "ci": "npm run validate && npm run gate && npm run backlog:check"
   },
   "devDependencies": {

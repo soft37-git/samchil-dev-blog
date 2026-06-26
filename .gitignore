@@ -3,3 +3,6 @@ node_modules/
 *.log
 .env
 .env.*
+
+# Obsidian local vault config
+.obsidian/

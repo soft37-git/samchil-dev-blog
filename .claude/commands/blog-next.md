@@ -1,5 +1,5 @@
 ---
-description: Produce the next blog post in EN + KR from researched, cross-validated sources.
+description: Produce the next blog post in EN + KR from researched, cross-validated sources, then generate external re-publish paste artifacts.
 ---
 
 You are the content-factory orchestrator for `samchil.dev/blog`. This repo is **content + automation only** — never add rendering/theme code. Read `blog.md` (the playbook) and obey `CLAUDE.md`.
@@ -34,4 +34,11 @@ Choose the lowest-`week` topic with `status: "todo"`. Set it to `"researching"` 
 2. `npm run gate` (Decision/Why/Rejected table, ≥2 code blocks, sources file present, tone) — must pass.
 3. On success set the topic to `status: "drafted"`. Report what was written and any warnings for human review.
 
-Never publish a post that fails a gate. Verified, cross-checked, paired — or it does not ship.
+## Phase 5 — External re-publish artifacts (사용자 규칙: 게시는 사람 확인 후)
+Only meaningful once the post is **published** (frontmatter `draft` removed). Official posting APIs are dead for all three platforms → we generate paste-ready files only, never auto-post. → `docs/decisions/20260627-external-publish-export-only.md` · `docs/specs/external-export.md`
+1. `npm run summary -- <slug>` → `content/summaries/<slug>.summary.json` (en→Medium, ko→Velog/Tistory; canonical = own-language original, §5-1).
+   - If it reports the post is still `draft`, that's expected for an unpublished post — note it and skip Phase 5's rest (no external artifacts until published).
+2. `npm run export -- <slug>` → `content/exports/<slug>/{medium,velog,tistory}.md` + `_post.md` checklist.
+3. Report the exports path and remind: **posting is manual** — follow `_post.md`. Do **not** log into platforms or auto-post.
+
+Never publish a post that fails a gate. Verified, cross-checked, paired — or it does not ship. External re-publishing stops at paste-ready artifacts; a human posts.
