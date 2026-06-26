@@ -1,5 +1,5 @@
 # INDEX
-> 마지막 업데이트: 2026-06-27 (W2 실글 + 발행 전파 publish.yml 전환)
+> 마지막 업데이트: 2026-06-27 (W2 라이브 게재 — 발행 라인 end-to-end 완성)
 
 ## 프로젝트
 - [[PROJECT]] — 전체 상태 및 진행현황
@@ -17,6 +17,7 @@
 ## 결정 로그
 - [[docs/decisions/20260627-blog-factory-skeleton]] — 팩토리 뼈대(구동=Claude Code 커맨드·검증=TS·교차검증 데이터 분리)
 - [[docs/decisions/20260626-publish-via-submodule-pointer]] — 발행 전파를 Deploy Hook→submodule 포인터 bump로 전환
+- [[docs/decisions/20260627-blog-publish-live]] — 첫 글 라이브 게재(레포 public 전환 + 커밋 author 매칭)
 
 ## 세션 아카이브
 - (없음)

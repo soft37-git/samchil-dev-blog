@@ -1,5 +1,5 @@
 # Samchil Blog — 콘텐츠 팩토리
-> 버전: 0.1.0 | 마지막 업데이트: 2026-06-27 (W2 실글 작성)
+> 버전: 0.1.0 | 마지막 업데이트: 2026-06-27 (W2 발행·라이브 게재, 발행 라인 완성)
 
 이 레포 = **콘텐츠(MDX ko/en) + 자동화**만. 렌더링은 본 사이트(samchil-dev)가 전담. URL은 `samchil.dev/blog` 단일 오리진. → [[blog]] §9 · [[docs/decisions/20260627-blog-factory-skeleton]]
 
@@ -20,12 +20,11 @@ W2 `hash-vs-encryption-hmac`(L1, access·trace) 교차검증 리서치 기반 EN
 ### 🔵 시드 8주(§8)
 W1~W8 topics.json에 등록. W1 drafted(스텁)·W2 drafted(실글), W3~W8 todo.
 
-## 🔵 본 사이트 연동
-### ⚪ submodule `blog/` 소비
-본 사이트(soft37-git/samchil-dev)가 이 레포를 git submodule(`blog/`)로 물고 `/blog` 렌더(별도 작업, samchil-dev 측).
-### 🔵 발행 전파 = submodule 포인터 bump
-`publish.yml`이 content/posts 변경 시 본 사이트 포인터를 최신 SHA로 올려 Vercel 빌드 트리거. Deploy Hook 방식 폐기. → [[docs/decisions/20260626-publish-via-submodule-pointer]]
-> 다음: 본 사이트 레포에 `MAIN_REPO_PAT`(fine-grained, Contents:RW) 시크릿 등록.
+## 🟢 본 사이트 연동
+### 🟢 submodule `blog/` 소비 + Vercel 빌드
+본 사이트(soft37-git/samchil-dev)가 이 레포를 submodule(`blog/`)로 물고 `/blog`·`/blog/ko` 렌더. **이 레포 public 전환**으로 Vercel 빌드의 submodule fetch 성공 → W2 라이브 게재 확인(`samchil.dev/blog/hash-vs-encryption-hmac`).
+### 🟢 발행 전파 = submodule 포인터 bump
+`publish.yml`이 content/posts 변경 시 본 사이트 포인터 bump → Vercel 빌드. `MAIN_REPO_PAT` 등록 완료, 커밋 author는 GitHub 매칭 noreply여야 Vercel 통과(이슈 해결). → [[docs/decisions/20260626-publish-via-submodule-pointer]] · [[docs/decisions/20260627-blog-publish-live]]
 
 ## 🔵 외부 배포
 ### 🟢 요약 초안 생성(반자동)
